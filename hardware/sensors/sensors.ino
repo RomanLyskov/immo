@@ -16,6 +16,7 @@ unsigned long last_ms;
 
 void setup()
 {
+  nh.getHardware()->setBaud(500000);
   nh.initNode();
 
   nh.advertise(ir1_pub);
