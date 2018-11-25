@@ -1,40 +1,70 @@
-/*
- * rosserial PubSub Example
- * Prints "hello world!" and toggles led
- */
-
 #include <ros.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Empty.h>
+#include <ros/time.h>
+#include <sensor_msgs/Range.h>
 
-ros::NodeHandle  nh;
+#define RATE_MS 10
 
+ros::NodeHandle nh;
 
-void messageCb( const std_msgs::Empty& toggle_msg){
-  digitalWrite(13, HIGH-digitalRead(13));   // blink the led
-}
+sensor_msgs::Range ir1_msg;
+sensor_msgs::Range ir2_msg;
 
-ros::Subscriber<std_msgs::Empty> sub("toggle_led", messageCb );
+ros::Publisher ir1_pub( "range/front_left/ir", &ir1_msg);
+ros::Publisher ir2_pub( "range/front_right/ir", &ir2_msg);
 
-
-
-std_msgs::String str_msg;
-ros::Publisher chatter("chatter", &str_msg);
-
-char hello[13] = "hello world!";
+unsigned long last_ms;
 
 void setup()
 {
-  pinMode(13, OUTPUT);
   nh.initNode();
-  nh.advertise(chatter);
-  nh.subscribe(sub);
+
+  nh.advertise(ir1_pub);
+  nh.advertise(ir2_pub);
+  
+  ir1_msg.radiation_type = sensor_msgs::Range::INFRARED;
+  ir1_msg.header.frame_id =  "/front_left_ir";
+  ir1_msg.field_of_view = 0.001;
+  ir1_msg.min_range = 0.03;
+  ir1_msg.max_range = 0.4;
+
+  ir2_msg.radiation_type = sensor_msgs::Range::INFRARED;
+  ir2_msg.header.frame_id =  "/front_right_ir";
+  ir2_msg.field_of_view = 0.001;
+  ir2_msg.min_range = 0.03;
+  ir2_msg.max_range = 0.4;
 }
 
 void loop()
 {
-  str_msg.data = hello;
-  chatter.publish( &str_msg );
+  if((millis() - last_ms) > RATE_MS){
+    last_ms = millis();
+
+    ir1_msg.range = getIRRange(0);
+    ir1_msg.header.stamp = nh.now();
+    ir1_pub.publish(&ir1_msg);
+
+    ir2_msg.range = getIRRange(1);
+    ir2_msg.header.stamp = nh.now();
+    ir2_pub.publish(&ir2_msg);
+  }
+
   nh.spinOnce();
-  delay(500);
 }
+
+float getIRRange(int analogPin) {
+  return analogRead(analogPin);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
