@@ -1,3 +1,11 @@
+Установка:
+sudo apt-get install ros-kinetic-hls-lfcd-lds-driver
+
+Перед запуском необходимо предоставить права на порт:
+sudo chmod a+rw /dev/ttyUSB0
+
+
+
 # HLDS HLS-LFCD-LDS (LDS-01)
 <img src="http://emanual.robotis.com/assets/images/platform/turtlebot3/appendix_lds/lds.png" width="400">
 
